@@ -1,0 +1,10 @@
+env:
+  GO_TEST_RESOURCE_PATH=$TRAVIS_BUILD_DIR/test_resources
+
+language: go
+
+go:
+  - master
+
+script:
+  - go test -v -race -covermode atomic -coverprofile=$TRAVIS_BUILD_DIR/coverage ./... && bash <(curl -s https://codecov.io/bash)

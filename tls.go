@@ -1,0 +1,111 @@
+/*
+Copyright 2018 Ahmed Zaher
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package tls
+
+import (
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
+	"errors"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+func LoadX509Certificates(path string) (certs []*x509.Certificate, err error) {
+
+	certs = make([]*x509.Certificate, 0)
+
+	path = strings.TrimSpace(path)
+
+	err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		var PEM []byte
+
+		if PEM, err = ioutil.ReadFile(path); err != nil {
+			return err
+		}
+
+		for {
+			var DERBlock *pem.Block
+
+			DERBlock, PEM = pem.Decode(PEM)
+
+			if DERBlock == nil {
+				break
+			}
+
+			if DERBlock.Type == "CERTIFICATE" {
+				var cert *x509.Certificate
+
+				if cert, err = x509.ParseCertificate(DERBlock.Bytes); err != nil {
+					return err
+				}
+
+				certs = append(certs, cert)
+			}
+		}
+
+		return nil
+	})
+
+	return
+}
+
+func LoadTLSCertificate(certPath, keyPath, keyPassPhrase string) (cert *tls.Certificate, err error) {
+
+	certPath, keyPath = strings.TrimSpace(certPath), strings.TrimSpace(keyPath)
+
+	var (
+		keyPEM, certPEM []byte
+	)
+
+	if certPEM, err = ioutil.ReadFile(certPath); err != nil {
+		return
+	}
+
+	if keyPEM, err = ioutil.ReadFile(keyPath); err != nil {
+		return
+	}
+
+	if keyBlock, _ := pem.Decode(keyPEM); keyBlock == nil {
+		err = errors.New("private key file contains no PEM data")
+		return
+	} else if x509.IsEncryptedPEMBlock(keyBlock) {
+		if keyBlock.Bytes, err = x509.DecryptPEMBlock(keyBlock, []byte(keyPassPhrase)); err != nil {
+			return
+		}
+
+		keyPEM = pem.EncodeToMemory(keyBlock)
+	}
+
+	var c tls.Certificate
+
+	c, err = tls.X509KeyPair(certPEM, keyPEM)
+
+	cert = &c
+
+	return
+}
