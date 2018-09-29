@@ -3,7 +3,7 @@ This library provides helper functions to deal with TLS certificates and keys ea
 
 [![License](https://img.shields.io/badge/license-apache%20v2.0-blue.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/adzr/tls)
-[![TravisCI](https://img.shields.io/travis/adzr/tls.svg?style=flat-square)](https://travis-ci.com/adzr/tls)
+[![TravisCI](https://img.shields.io/travis/com/adzr/tls.svg?style=flat-square)](https://travis-ci.com/adzr/tls)
 [![Codecov](https://img.shields.io/codecov/c/github/adzr/tls.svg?style=flat-square)](https://codecov.io/gh/adzr/tls)
 [![Go Report Card](https://goreportcard.com/badge/github.com/adzr/tls?style=flat-square)](https://goreportcard.com/report/github.com/adzr/tls)
 
