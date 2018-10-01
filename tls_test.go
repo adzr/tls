@@ -76,7 +76,11 @@ func TestGetTLSCertificate(t *testing.T) {
 			err = e
 		}
 
-		cert, e := LoadTLSCertificate(path+"/"+input[2].(string), path+"/"+input[0].(string), input[1].(string))
+		cert, e := LoadTLSCertificate(&Config{
+			Cert:       path + "/" + input[2].(string),
+			Key:        path + "/" + input[0].(string),
+			PassPhrase: input[1].(string),
+		})
 
 		if !compareErrors(e, err) {
 			t.Errorf("case %v: expected error: %v, found: %v", n, err, e)

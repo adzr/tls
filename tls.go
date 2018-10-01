@@ -27,6 +27,26 @@ import (
 	"strings"
 )
 
+// Config carries the TLS transport configuration.
+type Config struct {
+	// Cert is the absolute path for the TLS certificate PEM file.
+	Cert string `json:"cert,omitempty"`
+
+	// Key is the absolute path for the TLS private key PEM file.
+	Key string `json:"key,omitempty"`
+
+	// PassPhrase is the pass-phrase to the private key specified in Key.
+	PassPhrase string `json:"passPhrase,omitempty"`
+}
+
+func Configuration() *Config {
+	return &Config{
+		Cert:       "",
+		Key:        "",
+		PassPhrase: "",
+	}
+}
+
 func LoadX509Certificates(path string) (certs []*x509.Certificate, err error) {
 
 	certs = make([]*x509.Certificate, 0)
@@ -74,9 +94,9 @@ func LoadX509Certificates(path string) (certs []*x509.Certificate, err error) {
 	return
 }
 
-func LoadTLSCertificate(certPath, keyPath, keyPassPhrase string) (cert *tls.Certificate, err error) {
+func LoadTLSCertificate(conf *Config) (cert *tls.Certificate, err error) {
 
-	certPath, keyPath = strings.TrimSpace(certPath), strings.TrimSpace(keyPath)
+	certPath, keyPath := strings.TrimSpace(conf.Cert), strings.TrimSpace(conf.Key)
 
 	var (
 		keyPEM, certPEM []byte
@@ -94,7 +114,7 @@ func LoadTLSCertificate(certPath, keyPath, keyPassPhrase string) (cert *tls.Cert
 		err = errors.New("private key file contains no PEM data")
 		return
 	} else if x509.IsEncryptedPEMBlock(keyBlock) {
-		if keyBlock.Bytes, err = x509.DecryptPEMBlock(keyBlock, []byte(keyPassPhrase)); err != nil {
+		if keyBlock.Bytes, err = x509.DecryptPEMBlock(keyBlock, []byte(conf.PassPhrase)); err != nil {
 			return
 		}
 
